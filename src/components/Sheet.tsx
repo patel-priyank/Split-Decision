@@ -40,7 +40,6 @@ export function Sheet({ open, onClose, label, children }: Props) {
         ref={sheetRef}
         className="sheet"
         role="dialog"
-        aria-modal="true"
         aria-label={label}
         tabIndex={-1}
         inert={!open}

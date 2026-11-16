@@ -158,7 +158,7 @@ export default function App() {
       </header>
 
       <main className="stage">
-        <div className={`card-slot ${dealKey ? 'is-dealt' : ''}`} key={dealKey}>
+        <div className={`card-slot ${dealKey ? 'is-dealt' : ''}`} key={dealKey} inert={openSheet !== null}>
           {current ? (
             <LevelCard level={current} />
           ) : (
