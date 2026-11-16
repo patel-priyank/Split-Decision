@@ -12,12 +12,12 @@ import {
   type Level
 } from './data/types';
 
-import { roll } from './lib/haptics';
+import { bump, roll } from './lib/haptics';
 import { pickRandom } from './lib/random';
 import { useStoredState } from './lib/useStoredState';
 
 import { FilterSheet } from './components/FilterSheet';
-import { DiceIcon, FilterIcon, InfoIcon } from './components/Icons';
+import { DiceIcon, FilterIcon, InfoIcon, UndoIcon } from './components/Icons';
 import { InfoSheet } from './components/InfoSheet';
 import { LevelCard } from './components/LevelCard';
 
@@ -44,9 +44,13 @@ function sanitise(stored: Partial<FilterState> | null | undefined): FilterState 
   const merged = { ...DEFAULT_FILTERS, ...(stored ?? {}) };
   return {
     story: merged.story === 'all' || Object.hasOwn(STORY_LABEL, merged.story) ? merged.story : 'all',
-    energy: Array.isArray(merged.energy) ? merged.energy.filter(e => typeof e === 'string' && Object.hasOwn(ENERGY_LABEL, e)) : [],
+    energy: Array.isArray(merged.energy)
+      ? merged.energy.filter(e => typeof e === 'string' && Object.hasOwn(ENERGY_LABEL, e))
+      : [],
     boss: Object.hasOwn(BOSS_LABEL, merged.boss) ? merged.boss : 'any',
-    kinds: Array.isArray(merged.kinds) ? merged.kinds.filter(k => typeof k === 'string' && Object.hasOwn(KIND_LABEL, k)) : []
+    kinds: Array.isArray(merged.kinds)
+      ? merged.kinds.filter(k => typeof k === 'string' && Object.hasOwn(KIND_LABEL, k))
+      : []
   };
 }
 
@@ -83,6 +87,9 @@ export default function App() {
   // Deal a fresh pick on load, using the saved filters.
   const [currentId, setCurrentId] = useState(() => pickRandom(pool, recent)?.id);
   const [dealKey, setDealKey] = useState(0);
+  // The card before the last Pick, for a single undo. In memory only, so a reload clears it.
+  const [previousId, setPreviousId] = useState<string | undefined>();
+  const [undone, setUndone] = useState(false);
 
   // Fade the UI in once the web fonts are ready (or after FONT_WAIT_MS), so text doesn't visibly swap fonts on load.
   const [ready, setReady] = useState(false);
@@ -124,16 +131,35 @@ export default function App() {
     remember(next.id);
   }, [currentId, pool, recent, remember]);
 
-  function randomise() {
+  function deal({ undoable }: { undoable: boolean }) {
     // Close any open drawer so the new pick is visible.
     setOpenSheet(null);
     const next = pickRandom(pool, recent, currentId);
     if (!next) return;
     roll();
+    // A pick after changing filters isn't undoable: the old card may not match them.
+    setPreviousId(undoable ? currentId : undefined);
+    setUndone(false);
     setCurrentId(next.id);
     remember(next.id);
     setDealKey(k => k + 1);
   }
+
+  function undo() {
+    if (!previousId) return;
+    bump();
+    setCurrentId(previousId);
+    setPreviousId(undefined);
+    setUndone(true);
+    setDealKey(k => k + 1);
+  }
+
+  const changeFilters = (next: FilterState) => {
+    setFilters(next);
+    setPreviousId(undefined);
+  };
+
+  const canUndo = previousId !== undefined && openSheet === null;
 
   const closeSheet = useCallback(() => setOpenSheet(null), []);
   const toggleSheet = (sheet: SheetName) => setOpenSheet(open => (open === sheet ? null : sheet));
@@ -158,7 +184,11 @@ export default function App() {
       </header>
 
       <main className="stage">
-        <div className={`card-slot ${dealKey ? 'is-dealt' : ''}`} key={dealKey} inert={openSheet !== null}>
+        <div
+          className={`card-slot ${dealKey ? (undone ? 'is-undone' : 'is-dealt') : ''}`}
+          key={dealKey}
+          inert={openSheet !== null}
+        >
           {current ? (
             <LevelCard level={current} />
           ) : (
@@ -171,15 +201,21 @@ export default function App() {
         <FilterSheet
           open={openSheet === 'filters'}
           value={filters}
-          onChange={setFilters}
+          onChange={changeFilters}
           onClose={closeSheet}
-          onDone={randomise}
+          onDone={() => deal({ undoable: false })}
           matchCount={pool.length}
         />
         <InfoSheet open={openSheet === 'info'} onClose={closeSheet} />
       </main>
 
       <footer className="bottom-bar">
+        {canUndo && (
+          <button className="undo-pill" onClick={undo} key={dealKey}>
+            <UndoIcon />
+            Undo
+          </button>
+        )}
         <button
           className={`icon-btn ${openSheet === 'info' ? 'is-open' : ''}`}
           onClick={() => toggleSheet('info')}
@@ -190,7 +226,7 @@ export default function App() {
         </button>
         <button
           className="randomise"
-          onClick={randomise}
+          onClick={() => deal({ undoable: true })}
           disabled={pool.length === 0}
           aria-label={pickLabel}
           title={pickLabel}
