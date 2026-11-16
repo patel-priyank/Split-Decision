@@ -1,11 +1,31 @@
-import { useState } from 'react';
-import type { Level } from '../data/types';
-import { ENERGY_LABEL, KIND_LABEL, STORY_LABEL } from '../data/types';
+import { useLayoutEffect, useRef, useState } from 'react';
+
+import { ENERGY_LABEL, KIND_LABEL, STORY_LABEL, type Level } from '../data/types';
+
 import { Marquee } from './Marquee';
+
+// Fractional card heights on phones make scrollHeight round up and clientHeight round down,
+// so text that fits can still "overflow" by a pixel or two. Only scroll beyond that.
+const MIN_OVERFLOW_PX = 2;
 
 export function LevelCard({ level }: { level: Level }) {
   const [imgFailed, setImgFailed] = useState(false);
   const showImage = level.image && !imgFailed;
+
+  const descRef = useRef<HTMLParagraphElement>(null);
+  const [descScrolls, setDescScrolls] = useState(false);
+
+  useLayoutEffect(() => {
+    const descEl = descRef.current;
+    if (!descEl) return;
+    const measure = () => setDescScrolls(descEl.scrollHeight - descEl.clientHeight > MIN_OVERFLOW_PX);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(descEl);
+    // Web fonts can change the text height after first paint.
+    document.fonts?.ready.then(measure).catch(() => {});
+    return () => observer.disconnect();
+  }, [level.description]);
 
   return (
     <article className={`card card-${level.story}`}>
@@ -14,7 +34,7 @@ export function LevelCard({ level }: { level: Level }) {
           <img
             className="media-main"
             src={level.image}
-            alt={level.title}
+            alt=""
             referrerPolicy="no-referrer"
             onError={() => setImgFailed(true)}
           />
@@ -40,7 +60,9 @@ export function LevelCard({ level }: { level: Level }) {
         <p className="card-tagline" title={level.tagline}>
           {level.tagline}
         </p>
-        <p className="card-desc">{level.description}</p>
+        <p ref={descRef} className={`card-desc ${descScrolls ? 'is-scrollable' : ''}`}>
+          {level.description}
+        </p>
       </div>
     </article>
   );

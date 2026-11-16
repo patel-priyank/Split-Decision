@@ -1,7 +1,8 @@
 export type Story = 'mio' | 'zoe' | 'both';
 export type Kind = 'level' | 'side-story';
 export type Energy = 'chill' | 'medium' | 'intense';
-export type BossFilter = 'any' | 'only' | 'none';
+
+type BossFilter = 'any' | 'only' | 'none';
 
 export interface Level {
   id: string;
@@ -18,6 +19,29 @@ export interface Level {
   description: string;
   /** Optional image URL (wiki screenshot) */
   image?: string;
+}
+
+export interface FilterState {
+  story: Story | 'all';
+  energy: Energy[];
+  boss: BossFilter;
+  kinds: Kind[];
+}
+
+export const DEFAULT_FILTERS: FilterState = {
+  story: 'all',
+  energy: [],
+  boss: 'any',
+  kinds: []
+};
+
+export function activeFilterCount(filters: FilterState): number {
+  return (
+    (filters.story !== 'all' ? 1 : 0) +
+    (filters.energy.length ? 1 : 0) +
+    (filters.boss !== 'any' ? 1 : 0) +
+    (filters.kinds.length ? 1 : 0)
+  );
 }
 
 export const STORY_LABEL: Record<Story, string> = {

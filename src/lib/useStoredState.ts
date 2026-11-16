@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+
 import { load, save } from './storage';
 
 export function useStoredState<T>(key: string, initial: T) {

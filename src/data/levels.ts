@@ -1,6 +1,6 @@
 import { DESCRIPTIONS } from './descriptions';
 import { IMAGES } from './images';
-import type { Energy, Level, Story } from './types';
+import type { Energy, Kind, Level, Story } from './types';
 
 /*
  * Split Fiction: 72 levels and 12 side stories across 8 chapters.
@@ -15,32 +15,27 @@ import type { Energy, Level, Story } from './types';
 type Entry = [title: string, energy: Energy, tagline: string, boss?: 'boss'];
 
 interface ChapterDef {
-  n: number;
+  number: number;
   title: string;
   story: Story;
-  description: string;
   levels: Entry[];
   sideStories?: Entry[];
 }
 
 const CHAPTERS: ChapterDef[] = [
   {
-    n: 1,
+    number: 1,
     title: 'Rader Publishing',
     story: 'both',
-    description:
-      "The prologue. Mio and Zoe arrive at Rader Publishing, get hooked up to the simulation machine, and get a first taste of each other's worlds.",
     levels: [
       ['Freedom Fighters', 'chill', "A quick first step into Mio's sci-fi."],
       ['Brave Knights', 'chill', "A quick first step into Zoe's fantasy."]
     ]
   },
   {
-    n: 2,
+    number: 2,
     title: 'Neon Revenge',
     story: 'mio',
-    description:
-      "Mio's neon-soaked cyberpunk city. Chases, wall-running, gravity-flipping streets and a showdown with the head of a crime syndicate.",
     levels: [
       ['Rush Hour', 'intense', 'Flying trucks and a vehicle boss.', 'boss'],
       ['Play Me Techno', 'medium', 'Drop the beat to get through.'],
@@ -61,11 +56,9 @@ const CHAPTERS: ChapterDef[] = [
     ]
   },
   {
-    n: 3,
+    number: 3,
     title: 'Hopes of Spring',
     story: 'zoe',
-    description:
-      "Zoe's storybook fantasy. Lush forests, nature magic, transformations and puzzles, ending in the frozen halls of the Ice King.",
     levels: [
       ['The Underlands', 'chill', 'Down into the roots of the world.'],
       ['Lord Evergreen', 'chill', 'Meet the lord of the forest.'],
@@ -84,11 +77,9 @@ const CHAPTERS: ChapterDef[] = [
     ]
   },
   {
-    n: 4,
+    number: 4,
     title: 'Final Dawn',
     story: 'mio',
-    description:
-      "Mio's military sci-fi. Dropships, gun upgrades, robot factories and jetpacks, with lots of shooting and an Overseer to deal with.",
     levels: [
       ['The Dropship', 'intense', 'Hit the ground running.'],
       ['Infiltration', 'intense', "Sneak in. Or don't.", 'boss'],
@@ -110,11 +101,9 @@ const CHAPTERS: ChapterDef[] = [
     ]
   },
   {
-    n: 5,
+    number: 5,
     title: 'Rise of the Dragon Realm',
     story: 'zoe',
-    description:
-      "Zoe's high fantasy. Bond with baby dragons, watch them grow, solve temple puzzles and fly into a storm against a giant foe.",
     levels: [
       ['A Serpentine Path', 'chill', 'A winding start to the dragon realm.'],
       ['Water Temple', 'medium', 'Classic temple, wet edition.'],
@@ -136,11 +125,9 @@ const CHAPTERS: ChapterDef[] = [
     ]
   },
   {
-    n: 6,
+    number: 6,
     title: 'Isolation',
     story: 'mio',
-    description:
-      "Mio's sci-fi prison. Drones, pinball contraptions and maximum-security cell blocks on the way to the mysterious prisoner.",
     levels: [
       ['Prison Ship', 'intense', 'Welcome aboard. Mind the guards.'],
       ['Handy Drones', 'medium', 'Drones that actually help.'],
@@ -156,10 +143,9 @@ const CHAPTERS: ChapterDef[] = [
     ]
   },
   {
-    n: 7,
+    number: 7,
     title: 'The Hollow',
     story: 'zoe',
-    description: "Zoe's dark fantasy. Ghost towns, memories and spirit guides, ending with a many-headed hydra.",
     levels: [
       ['An Ominous Welcome', 'chill', "Something's off here."],
       ['Mosaic of Memories', 'chill', 'Piece the past together.'],
@@ -170,11 +156,9 @@ const CHAPTERS: ChapterDef[] = [
     ]
   },
   {
-    n: 8,
+    number: 8,
     title: 'Split',
     story: 'both',
-    description:
-      'The worlds merge. Switch between sci-fi and fantasy in the same space, face a god and bring the story to its end.',
     levels: [
       ['Split Up', 'chill', 'The worlds start to come apart.'],
       ['A Warm Greeting', 'medium', 'Not as friendly as it sounds.'],
@@ -195,43 +179,33 @@ const slug = (s: string) =>
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)/g, '');
 
-function build(): Level[] {
-  const out: Level[] = [];
-  for (const ch of CHAPTERS) {
+function buildLevels(): Level[] {
+  const levels: Level[] = [];
+  for (const chapter of CHAPTERS) {
+    const add = (entries: Entry[], kind: Kind, story: Story, idPrefix: string) => {
+      for (const [title, energy, tagline, boss] of entries) {
+        levels.push({
+          id: `${idPrefix}-${slug(title)}`,
+          title,
+          kind,
+          chapterTitle: chapter.title,
+          story,
+          energy,
+          boss: boss === 'boss',
+          tagline,
+          description: DESCRIPTIONS[title],
+          image: IMAGES[title]
+        });
+      }
+    };
+
     // Side stories belong to the *other* writer's world
-    const otherStory: Story = ch.story === 'mio' ? 'zoe' : ch.story === 'zoe' ? 'mio' : 'both';
+    const otherStory: Story = chapter.story === 'mio' ? 'zoe' : chapter.story === 'zoe' ? 'mio' : 'both';
 
-    ch.levels.forEach(([title, energy, tagline, boss]) => {
-      out.push({
-        id: `ch${ch.n}-${slug(title)}`,
-        title,
-        kind: 'level',
-        chapterTitle: ch.title,
-        story: ch.story,
-        energy,
-        boss: boss === 'boss',
-        tagline,
-        description: DESCRIPTIONS[title] ?? ch.description,
-        image: IMAGES[title]
-      });
-    });
-
-    for (const [title, energy, tagline, boss] of ch.sideStories ?? []) {
-      out.push({
-        id: `side-${slug(title)}`,
-        title,
-        kind: 'side-story',
-        chapterTitle: ch.title,
-        story: otherStory,
-        energy,
-        boss: boss === 'boss',
-        tagline,
-        description: DESCRIPTIONS[title] ?? '',
-        image: IMAGES[title]
-      });
-    }
+    add(chapter.levels, 'level', chapter.story, `ch${chapter.number}`);
+    add(chapter.sideStories ?? [], 'side-story', otherStory, 'side');
   }
-  return out;
+  return levels;
 }
 
-export const LEVELS: Level[] = build();
+export const LEVELS: Level[] = buildLevels();

@@ -1,33 +1,16 @@
-import type { BossFilter, Energy, Kind, Story } from '../data/types';
-import { BOSS_LABEL, ENERGY_LABEL, KIND_LABEL } from '../data/types';
+import {
+  activeFilterCount,
+  BOSS_LABEL,
+  DEFAULT_FILTERS,
+  ENERGY_LABEL,
+  KIND_LABEL,
+  type FilterState
+} from '../data/types';
 
 import { bump, tick } from '../lib/haptics';
 
 import { MultiSelect } from './MultiSelect';
 import { Sheet } from './Sheet';
-
-export interface FilterState {
-  story: Story | 'all';
-  energy: Energy[];
-  boss: BossFilter;
-  kinds: Kind[];
-}
-
-export const DEFAULT_FILTERS: FilterState = {
-  story: 'all',
-  energy: [],
-  boss: 'any',
-  kinds: []
-};
-
-export function activeFilterCount(filterState: FilterState): number {
-  return (
-    (filterState.story !== 'all' ? 1 : 0) +
-    (filterState.energy.length ? 1 : 0) +
-    (filterState.boss !== 'any' ? 1 : 0) +
-    (filterState.kinds.length ? 1 : 0)
-  );
-}
 
 interface Props {
   open: boolean;
@@ -37,15 +20,25 @@ interface Props {
   matchCount: number;
 }
 
-const STORY_OPTIONS: { value: FilterState['story']; label: string }[] = [
+interface Option<T extends string> {
+  value: T;
+  label: string;
+}
+
+function toOptions<T extends string>(labels: Record<T, string>): Option<T>[] {
+  return (Object.keys(labels) as T[]).map(value => ({ value, label: labels[value] }));
+}
+
+// Story options use shorter labels than the card badge (STORY_LABEL), plus an 'all' choice.
+const STORY_OPTIONS: Option<FilterState['story']>[] = [
   { value: 'all', label: 'Anyone' },
   { value: 'mio', label: 'Mio' },
   { value: 'zoe', label: 'Zoe' },
   { value: 'both', label: 'Both' }
 ];
-const ENERGY_OPTIONS = (Object.keys(ENERGY_LABEL) as Energy[]).map(val => ({ value: val, label: ENERGY_LABEL[val] }));
-const KIND_OPTIONS = (Object.keys(KIND_LABEL) as Kind[]).map(val => ({ value: val, label: KIND_LABEL[val] }));
-const BOSS_OPTIONS = Object.keys(BOSS_LABEL) as BossFilter[];
+const ENERGY_OPTIONS = toOptions(ENERGY_LABEL);
+const KIND_OPTIONS = toOptions(KIND_LABEL);
+const BOSS_OPTIONS = toOptions(BOSS_LABEL);
 
 function Segmented<T extends string>({
   options,
@@ -53,9 +46,9 @@ function Segmented<T extends string>({
   onChange,
   label
 }: {
-  options: { value: T; label: string }[];
+  options: Option<T>[];
   value: T;
-  onChange: (val: T) => void;
+  onChange: (next: T) => void;
   label: string;
 }) {
   return (
@@ -63,7 +56,7 @@ function Segmented<T extends string>({
       <span className="field-label">{label}</span>
       <div
         className="segmented"
-        role="radiogroup"
+        role="group"
         aria-label={label}
         style={{ gridTemplateColumns: `repeat(${options.length}, 1fr)` }}
       >
@@ -71,8 +64,7 @@ function Segmented<T extends string>({
           <button
             type="button"
             key={option.value}
-            role="radio"
-            aria-checked={value === option.value}
+            aria-pressed={value === option.value}
             className={`seg ${value === option.value ? 'selected' : ''}`}
             onClick={() => option.value !== value && onChange(option.value)}
           >
@@ -84,14 +76,14 @@ function Segmented<T extends string>({
   );
 }
 
-export function FilterSheet({ open, value, onChange: setFilters, onClose, matchCount }: Props) {
+export function FilterSheet({ open, value, onChange, onClose, matchCount }: Props) {
   // Every filter change gives a light tick.
-  const onChange = (next: FilterState) => {
+  const update = (next: FilterState) => {
     tick();
-    setFilters(next);
+    onChange(next);
   };
 
-  const active = activeFilterCount(value) > 0;
+  const hasActive = activeFilterCount(value) > 0;
 
   return (
     <Sheet open={open} onClose={onClose} label="Filters">
@@ -106,7 +98,7 @@ export function FilterSheet({ open, value, onChange: setFilters, onClose, matchC
         label="Whose story"
         options={STORY_OPTIONS}
         value={value.story}
-        onChange={story => onChange({ ...value, story })}
+        onChange={story => update({ ...value, story })}
       />
 
       <div className="field-row">
@@ -114,21 +106,21 @@ export function FilterSheet({ open, value, onChange: setFilters, onClose, matchC
           label="Energy"
           options={ENERGY_OPTIONS}
           value={value.energy}
-          onChange={energy => onChange({ ...value, energy })}
+          onChange={energy => update({ ...value, energy })}
         />
         <MultiSelect
           label="Type"
           options={KIND_OPTIONS}
           value={value.kinds}
-          onChange={kinds => onChange({ ...value, kinds })}
+          onChange={kinds => update({ ...value, kinds })}
         />
       </div>
 
       <Segmented
         label="Boss fights"
-        options={BOSS_OPTIONS.map(b => ({ value: b, label: BOSS_LABEL[b] }))}
+        options={BOSS_OPTIONS}
         value={value.boss}
-        onChange={boss => onChange({ ...value, boss })}
+        onChange={boss => update({ ...value, boss })}
       />
 
       <footer className="sheet-foot">
@@ -137,9 +129,9 @@ export function FilterSheet({ open, value, onChange: setFilters, onClose, matchC
           className="outline-btn"
           onClick={() => {
             bump();
-            setFilters(DEFAULT_FILTERS);
+            onChange(DEFAULT_FILTERS);
           }}
-          disabled={!active}
+          disabled={!hasActive}
         >
           Reset
         </button>

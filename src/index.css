@@ -177,7 +177,6 @@ button:disabled {
   white-space: nowrap;
   color: var(--text-2);
   font-size: 0.95rem;
-  font-weight: 600;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
 }
 
@@ -260,7 +259,7 @@ button:disabled {
   flex: none;
   aspect-ratio: 16 / 9;
   background: #000;
-  border-radius: 4px 4px 0 0;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
   overflow: hidden;
 }
 
@@ -307,10 +306,8 @@ button:disabled {
 }
 
 .badge,
-.kind-badge {
-  position: absolute;
-  top: 10px;
-  z-index: 1;
+.kind-badge,
+.tag {
   padding: 5px 10px;
   border-radius: var(--radius-sm);
   font-family: var(--font-display);
@@ -320,6 +317,13 @@ button:disabled {
   letter-spacing: 0.06em;
   background: rgba(8, 6, 16, 0.88);
   border: 1.5px solid currentColor;
+}
+
+.badge,
+.kind-badge {
+  position: absolute;
+  top: 10px;
+  z-index: 1;
 }
 
 .badge {
@@ -443,20 +447,19 @@ button:disabled {
 .card-tagline {
   margin: 0;
   font-size: 1.02rem;
-  font-weight: 600;
   color: var(--text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* Fills the remaining height; scrolls inside the card when it's longer. */
+/* Fills the remaining height; scrolls inside the card when it's longer (is-scrollable is set by LevelCard). */
 .card-desc {
   flex: 1;
   min-height: 0;
   margin: 0;
   padding-bottom: 18px;
-  overflow-y: auto;
+  overflow-y: hidden;
   overscroll-behavior: contain;
   scrollbar-width: thin;
   scrollbar-color: var(--line-strong) transparent;
@@ -466,6 +469,10 @@ button:disabled {
   color: var(--text-2);
   -webkit-mask-image: linear-gradient(#000 calc(100% - 22px), transparent);
   mask-image: linear-gradient(#000 calc(100% - 22px), transparent);
+}
+
+.card-desc.is-scrollable {
+  overflow-y: auto;
 }
 
 /* Energy / boss tags overlaid on the image, bottom-left */
@@ -479,15 +486,6 @@ button:disabled {
 }
 
 .tag {
-  padding: 5px 10px;
-  border-radius: var(--radius-sm);
-  font-family: var(--font-display);
-  font-size: 0.72rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  background: rgba(8, 6, 16, 0.88);
-  border: 1.5px solid currentColor;
   backdrop-filter: blur(6px);
 }
 
@@ -513,6 +511,7 @@ button:disabled {
   z-index: 10;
   pointer-events: none;
   visibility: hidden;
+  /* Delay matches the .sheet slide-out, so it stays visible until the animation ends */
   transition: visibility 0s 0.25s;
 }
 
@@ -548,12 +547,18 @@ button:disabled {
   border-top-color: var(--cyan-deep);
   border-radius: var(--radius);
   box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.6);
+  max-height: 100%;
   transform: translateY(calc(100% + 16px));
   transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .sheet-layer.open .sheet {
   transform: none;
+}
+
+/* The sheet only takes focus programmatically on open (see Sheet.tsx); its controls keep their own focus ring */
+.sheet:focus-visible {
+  outline: none;
 }
 
 .sheet-head {
@@ -617,7 +622,6 @@ button:disabled {
   border-radius: var(--radius-sm);
   font-weight: 700;
   font-size: 0.92rem;
-  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   transition:
@@ -973,7 +977,14 @@ button:disabled {
   }
 }
 
+/* Scrolls on its own when the sheet hits its max height on short screens, keeping the header and button visible.
+   (Not on .sheet itself: that would clip the Filters dropdowns, which open upwards.) */
 .info-body {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
   display: flex;
   flex-direction: column;
   gap: 12px;

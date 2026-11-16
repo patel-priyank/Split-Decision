@@ -5,19 +5,17 @@ interface Props<T extends string> {
   options: { value: T; label: string }[];
   value: T[];
   onChange: (next: T[]) => void;
-  /** Text shown when nothing is selected */
-  anyLabel?: string;
 }
 
-export function MultiSelect<T extends string>({ label, options, value, onChange, anyLabel = 'Any' }: Props<T>) {
+export function MultiSelect<T extends string>({ label, options, value, onChange }: Props<T>) {
   const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
   const listId = useId();
 
   useEffect(() => {
     if (!open) return;
     const onDown = (e: PointerEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      if (rootRef.current && !rootRef.current.contains(e.target as Node)) setOpen(false);
     };
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false);
     document.addEventListener('pointerdown', onDown);
@@ -28,22 +26,22 @@ export function MultiSelect<T extends string>({ label, options, value, onChange,
     };
   }, [open]);
 
-  const toggle = (v: T) => onChange(value.includes(v) ? value.filter(x => x !== v) : [...value, v]);
+  const toggle = (option: T) =>
+    onChange(value.includes(option) ? value.filter(selected => selected !== option) : [...value, option]);
   const summary =
     value.length === 0
-      ? anyLabel
+      ? 'Any'
       : options
           .filter(o => value.includes(o.value))
           .map(o => o.label)
           .join(', ');
 
   return (
-    <div className={`ms ${open ? 'open' : ''}`} ref={ref}>
+    <div className={`ms ${open ? 'open' : ''}`} ref={rootRef}>
       <span className="field-label">{label}</span>
       <button
         type="button"
         className="ms-trigger"
-        aria-haspopup="listbox"
         aria-expanded={open}
         aria-controls={listId}
         onClick={() => setOpen(o => !o)}
@@ -53,20 +51,19 @@ export function MultiSelect<T extends string>({ label, options, value, onChange,
         <span className="chev" aria-hidden="true" />
       </button>
       {open && (
-        <ul className="ms-list menu" id={listId} role="listbox" aria-multiselectable="true">
-          {options.map(o => {
-            const selected = value.includes(o.value);
+        <ul className="ms-list" id={listId} aria-label={label}>
+          {options.map(option => {
+            const selected = value.includes(option.value);
             return (
-              <li key={o.value}>
+              <li key={option.value}>
                 <button
                   type="button"
-                  role="option"
-                  aria-selected={selected}
+                  aria-pressed={selected}
                   className={`menu-row ${selected ? 'selected' : ''}`}
-                  onClick={() => toggle(o.value)}
+                  onClick={() => toggle(option.value)}
                 >
                   <span className="check" aria-hidden="true" />
-                  {o.label}
+                  {option.label}
                 </button>
               </li>
             );

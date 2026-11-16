@@ -3,7 +3,7 @@
 
 function vibrate(pattern: number | number[]): void {
   try {
-    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) navigator.vibrate(pattern);
+    if ('vibrate' in navigator) navigator.vibrate(pattern);
   } catch {
     /* ignore */
   }

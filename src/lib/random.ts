@@ -8,6 +8,6 @@ export function pickRandom(pool: Level[], recent: string[], currentId?: string):
   if (pool.length === 0) return undefined;
   const fresh = pool.filter(l => !recent.includes(l.id) && l.id !== currentId);
   const candidates = fresh.length > 0 ? fresh : pool.filter(l => l.id !== currentId);
-  const from = candidates.length > 0 ? candidates : pool;
-  return from[Math.floor(Math.random() * from.length)];
+  const choices = candidates.length > 0 ? candidates : pool;
+  return choices[Math.floor(Math.random() * choices.length)];
 }

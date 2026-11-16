@@ -1,41 +1,57 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { activeFilterCount, DEFAULT_FILTERS, FilterSheet, type FilterState } from './components/FilterSheet';
-import { InfoSheet } from './components/InfoSheet';
-import { LevelCard } from './components/LevelCard';
+
 import { LEVELS } from './data/levels';
-import { BOSS_LABEL, ENERGY_LABEL, KIND_LABEL, type Level } from './data/types';
+import {
+  activeFilterCount,
+  BOSS_LABEL,
+  DEFAULT_FILTERS,
+  ENERGY_LABEL,
+  KIND_LABEL,
+  STORY_LABEL,
+  type FilterState,
+  type Level
+} from './data/types';
+
 import { roll } from './lib/haptics';
-import { load } from './lib/storage';
 import { pickRandom } from './lib/random';
 import { useStoredState } from './lib/useStoredState';
 
+import { FilterSheet } from './components/FilterSheet';
+import { InfoSheet } from './components/InfoSheet';
+import { LevelCard } from './components/LevelCard';
+
 const RECENT_LIMIT = 5;
+const FILTERS_KEY = 'sd:filters';
+const RECENT_KEY = 'sd:recent';
+// Longest we wait for web fonts before showing the UI anyway.
+const FONT_WAIT_MS = 1000;
 
-// Clean up data from the removed "played history" feature.
-try {
-  localStorage.removeItem('sd:played');
-} catch {
-  /* ignore */
-}
+type SheetName = 'filters' | 'info';
 
-function matches(level: Level, f: FilterState): boolean {
-  if (f.story !== 'all' && level.story !== f.story) return false;
-  if (f.energy.length && !f.energy.includes(level.energy)) return false;
-  if (f.boss === 'only' && !level.boss) return false;
-  if (f.boss === 'none' && level.boss) return false;
-  if (f.kinds.length && !f.kinds.includes(level.kind)) return false;
+function matches(level: Level, filters: FilterState): boolean {
+  if (filters.story !== 'all' && level.story !== filters.story) return false;
+  if (filters.energy.length && !filters.energy.includes(level.energy)) return false;
+  if (filters.boss === 'only' && !level.boss) return false;
+  if (filters.boss === 'none' && level.boss) return false;
+  if (filters.kinds.length && !filters.kinds.includes(level.kind)) return false;
   return true;
 }
 
 // Merge with defaults and drop values that no longer exist (old moods, removed 'chapter' type, ...).
-function sanitise(f: Partial<FilterState> | null | undefined): FilterState {
-  const m = { ...DEFAULT_FILTERS, ...(f ?? {}) };
+// Object.hasOwn rather than `in`, so prototype keys like "toString" from corrupt storage are rejected.
+function sanitise(stored: Partial<FilterState> | null | undefined): FilterState {
+  const merged = { ...DEFAULT_FILTERS, ...(stored ?? {}) };
   return {
-    story: ['all', 'mio', 'zoe', 'both'].includes(m.story) ? m.story : 'all',
-    energy: Array.isArray(m.energy) ? m.energy.filter(e => e in ENERGY_LABEL) : [],
-    boss: m.boss in BOSS_LABEL ? m.boss : 'any',
-    kinds: Array.isArray(m.kinds) ? m.kinds.filter(k => k in KIND_LABEL) : []
+    story: merged.story === 'all' || Object.hasOwn(STORY_LABEL, merged.story) ? merged.story : 'all',
+    energy: Array.isArray(merged.energy) ? merged.energy.filter(e => Object.hasOwn(ENERGY_LABEL, e)) : [],
+    boss: Object.hasOwn(BOSS_LABEL, merged.boss) ? merged.boss : 'any',
+    kinds: Array.isArray(merged.kinds) ? merged.kinds.filter(k => Object.hasOwn(KIND_LABEL, k)) : []
   };
+}
+
+// Keep only string ids, so a corrupt stored value can't crash the picker.
+function sanitiseRecent(stored: unknown): string[] {
+  return Array.isArray(stored) ? stored.filter((id): id is string => typeof id === 'string') : [];
 }
 
 // Twinkling sparkles: [x%, y%, size px, delay s]. Weighted towards Zoe's (gold) corner.
@@ -53,7 +69,7 @@ const TWINKLES: [number, number, number, number][] = [
   [12, 64, 6, 2.9]
 ];
 
-const filterPool = (f: FilterState) => LEVELS.filter(l => matches(l, f));
+const filterPool = (filters: FilterState) => LEVELS.filter(level => matches(level, filters));
 
 function FilterIcon() {
   return (
@@ -95,18 +111,18 @@ function InfoIcon() {
 }
 
 export default function App() {
-  const [storedFilters, setFilters] = useStoredState<FilterState>('sd:filters', DEFAULT_FILTERS);
+  const [storedFilters, setFilters] = useStoredState<FilterState>(FILTERS_KEY, DEFAULT_FILTERS);
   const filters = useMemo(() => sanitise(storedFilters), [storedFilters]);
-  const [recent, setRecent] = useStoredState<string[]>('sd:recent', []);
-  const [openSheet, setOpenSheet] = useState<'filters' | 'info' | null>(null);
+  const [storedRecent, setRecent] = useStoredState<string[]>(RECENT_KEY, []);
+  const recent = useMemo(() => sanitiseRecent(storedRecent), [storedRecent]);
+  const [openSheet, setOpenSheet] = useState<SheetName | null>(null);
+  const pool = useMemo(() => filterPool(filters), [filters]);
 
   // Deal a fresh pick on load, using the saved filters.
-  const [currentId, setCurrentId] = useState<string | undefined>(
-    () => pickRandom(filterPool(sanitise(load('sd:filters', DEFAULT_FILTERS))), load<string[]>('sd:recent', []))?.id
-  );
-  const [spinKey, setSpinKey] = useState(0);
+  const [currentId, setCurrentId] = useState(() => pickRandom(pool, recent)?.id);
+  const [dealKey, setDealKey] = useState(0);
 
-  // Fade the UI in once the web fonts are ready (max ~1s), so text doesn't visibly swap fonts on load.
+  // Fade the UI in once the web fonts are ready (or after FONT_WAIT_MS), so text doesn't visibly swap fonts on load.
   const [ready, setReady] = useState(false);
   useEffect(() => {
     let done = false;
@@ -117,16 +133,17 @@ export default function App() {
       }
     };
     document.fonts?.ready.then(show).catch(show);
-    const timer = setTimeout(show, 1000);
+    const timer = setTimeout(show, FONT_WAIT_MS);
     return () => clearTimeout(timer);
   }, []);
 
-  const pool = useMemo(() => filterPool(filters), [filters]);
-  const current = LEVELS.find(l => l.id === currentId);
+  const current = LEVELS.find(level => level.id === currentId);
   const activeCount = activeFilterCount(filters);
+  const pickLabel = pool.length === 0 ? 'No matches for these filters' : 'Pick another';
 
   const remember = useCallback(
-    (id: string) => setRecent(r => [id, ...r.filter(x => x !== id)].slice(0, RECENT_LIMIT)),
+    (id: string) =>
+      setRecent(prev => [id, ...sanitiseRecent(prev).filter(prevId => prevId !== id)].slice(0, RECENT_LIMIT)),
     [setRecent]
   );
 
@@ -144,11 +161,11 @@ export default function App() {
     roll();
     setCurrentId(next.id);
     remember(next.id);
-    setSpinKey(k => k + 1);
+    setDealKey(k => k + 1);
   }
 
   const closeSheet = useCallback(() => setOpenSheet(null), []);
-  const toggleSheet = (sheet: 'filters' | 'info') => setOpenSheet(o => (o === sheet ? null : sheet));
+  const toggleSheet = (sheet: SheetName) => setOpenSheet(open => (open === sheet ? null : sheet));
 
   return (
     <div className={`app ${ready ? 'is-ready' : ''}`}>
@@ -170,7 +187,7 @@ export default function App() {
       </header>
 
       <main className="stage">
-        <div className={`card-slot ${spinKey ? 'is-dealt' : ''}`} key={spinKey}>
+        <div className={`card-slot ${dealKey ? 'is-dealt' : ''}`} key={dealKey}>
           {current ? (
             <LevelCard level={current} />
           ) : (
@@ -190,7 +207,7 @@ export default function App() {
         <InfoSheet open={openSheet === 'info'} onClose={closeSheet} />
       </main>
 
-      <nav className="bottom-bar">
+      <footer className="bottom-bar">
         <button
           className={`icon-btn ${openSheet === 'info' ? 'is-open' : ''}`}
           onClick={() => toggleSheet('info')}
@@ -203,8 +220,8 @@ export default function App() {
           className="randomise"
           onClick={randomise}
           disabled={pool.length === 0}
-          aria-label={pool.length === 0 ? 'No matches for these filters' : 'Pick another'}
-          title={pool.length === 0 ? 'No matches for these filters' : 'Pick another'}
+          aria-label={pickLabel}
+          title={pickLabel}
         >
           <DiceIcon />
         </button>
@@ -217,7 +234,7 @@ export default function App() {
           <FilterIcon />
           {activeCount > 0 && <span className="filter-count">{activeCount}</span>}
         </button>
-      </nav>
+      </footer>
     </div>
   );
 }

@@ -1,3 +1,5 @@
+import { useLayoutEffect, useRef } from 'react';
+
 import { Sheet } from './Sheet';
 
 interface Props {
@@ -6,13 +8,20 @@ interface Props {
 }
 
 export function InfoSheet({ open, onClose }: Props) {
+  const bodyRef = useRef<HTMLDivElement>(null);
+
+  // Start from the top each time it opens. Layout effect, so the old position never shows during the slide-in.
+  useLayoutEffect(() => {
+    if (open && bodyRef.current) bodyRef.current.scrollTop = 0;
+  }, [open]);
+
   return (
     <Sheet open={open} onClose={onClose} label="About Split Decision">
       <header className="sheet-head">
         <h2 className="sheet-title">About</h2>
       </header>
 
-      <div className="info-body">
+      <div className="info-body" ref={bodyRef}>
         <p>
           Finished Split Fiction and just want to jump back in for a chill session? Split Decision picks a random place
           to start, so you don't have to.
