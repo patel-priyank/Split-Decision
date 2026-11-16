@@ -17,7 +17,7 @@ import { pickRandom } from './lib/random';
 import { useStoredState } from './lib/useStoredState';
 
 import { FilterSheet } from './components/FilterSheet';
-import { DiceIcon, FilterIcon, InfoIcon, UndoIcon } from './components/Icons';
+import { DiceIcon, FilterIcon, InfoIcon } from './components/Icons';
 import { InfoSheet } from './components/InfoSheet';
 import { LevelCard } from './components/LevelCard';
 
@@ -159,7 +159,6 @@ export default function App() {
     setPreviousId(undefined);
   };
 
-  const canUndo = previousId !== undefined && openSheet === null;
 
   const closeSheet = useCallback(() => setOpenSheet(null), []);
   const toggleSheet = (sheet: SheetName) => setOpenSheet(open => (open === sheet ? null : sheet));
@@ -190,7 +189,7 @@ export default function App() {
           inert={openSheet !== null}
         >
           {current ? (
-            <LevelCard level={current} />
+            <LevelCard level={current} onUndo={previousId ? undo : undefined} />
           ) : (
             <div className="empty">
               <p>No matches for these filters.</p>
@@ -210,12 +209,6 @@ export default function App() {
       </main>
 
       <footer className="bottom-bar">
-        {canUndo && (
-          <button className="undo-pill" onClick={undo} key={dealKey}>
-            <UndoIcon />
-            Undo
-          </button>
-        )}
         <button
           className={`icon-btn ${openSheet === 'info' ? 'is-open' : ''}`}
           onClick={() => toggleSheet('info')}

@@ -226,53 +226,103 @@ button:disabled {
   }
 }
 
-/* Single-step undo, floating over the bottom of the card just above the dice */
-.undo-pill {
+/* Single-step undo chip, bottom-right of the card image (mirrors the tags bottom-left).
+   It pops in once the deal lands, then gives one "rewind" nudge so it gets noticed, and then sits still. */
+.undo-chip {
   position: absolute;
-  left: 50%;
-  bottom: calc(100% + 12px);
-  z-index: 2;
+  right: 10px;
+  bottom: 13px;
+  z-index: 1;
   display: flex;
   align-items: center;
-  gap: 6px;
-  height: 36px;
-  padding: 0 14px 0 12px;
-  border: 2px solid var(--line-strong);
-  border-radius: 999px;
-  background: var(--panel);
-  color: var(--text);
-  font-size: 0.9rem;
-  letter-spacing: 0.02em;
+  gap: 5px;
+  padding: 6px 11px 6px 9px;
+  border: 1.5px solid transparent;
+  border-radius: var(--radius-sm);
+  background:
+    linear-gradient(180deg, #e3fdfe 0%, var(--cyan) 50%, var(--cyan-deep) 100%) padding-box,
+    var(--split-edge) border-box;
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
   box-shadow:
-    0 3px 0 #000,
-    0 8px 20px rgba(0, 0, 0, 0.55);
-  transform: translateX(-50%);
-  animation: pill-in 0.2s ease-out;
+    0 3px 0 #1f7f8c,
+    0 6px 14px rgba(0, 0, 0, 0.5);
+  animation:
+    chip-in 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.4) 0.35s backwards,
+    chip-ping 0.9s ease-out 0.7s;
   transition:
     transform 0.08s,
     box-shadow 0.08s,
-    border-color 0.15s;
+    filter 0.15s;
 }
 
-.undo-pill:hover {
-  border-color: var(--cyan);
+/* Bigger tap target than the visible chip */
+.undo-chip::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
 }
 
-.undo-pill:active {
-  transform: translateX(-50%) translateY(2px);
-  box-shadow: 0 1px 0 #000;
+.undo-chip svg {
+  animation: chip-rewind 0.7s ease-in-out 0.7s;
 }
 
-@keyframes pill-in {
+.undo-chip:hover {
+  filter: brightness(1.05);
+}
+
+.undo-chip:active {
+  transform: translateY(2px);
+  box-shadow:
+    0 1px 0 #1f7f8c,
+    0 3px 8px rgba(0, 0, 0, 0.4);
+}
+
+@keyframes chip-in {
   from {
     opacity: 0;
-    transform: translateX(-50%) translateY(6px);
+    transform: translateY(6px) scale(0.7);
+  }
+}
+
+/* One soft ring pulsing out from the chip */
+@keyframes chip-ping {
+  from {
+    box-shadow:
+      0 3px 0 #1f7f8c,
+      0 6px 14px rgba(0, 0, 0, 0.5),
+      0 0 0 0 rgba(156, 243, 248, 0.7);
+  }
+
+  to {
+    box-shadow:
+      0 3px 0 #1f7f8c,
+      0 6px 14px rgba(0, 0, 0, 0.5),
+      0 0 0 10px rgba(156, 243, 248, 0);
+  }
+}
+
+/* Arrow swings back twice, like a rewind */
+@keyframes chip-rewind {
+  25%,
+  65% {
+    transform: rotate(-35deg);
+  }
+
+  45%,
+  85% {
+    transform: rotate(0deg);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .card-slot.is-undone,
-  .undo-pill {
+  .undo-chip,
+  .undo-chip svg {
     animation: none;
   }
 }
@@ -915,7 +965,6 @@ button:disabled {
 }
 
 .bottom-bar {
-  position: relative;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;

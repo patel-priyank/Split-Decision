@@ -4,9 +4,11 @@ import { ENERGY_LABEL, KIND_LABEL, STORY_LABEL, type Level } from '../data/types
 
 import { useIsScrollable } from '../lib/useIsScrollable';
 
+import { UndoIcon } from './Icons';
 import { Marquee } from './Marquee';
 
-export function LevelCard({ level }: { level: Level }) {
+// onUndo is set only when there's a previous pick to go back to.
+export function LevelCard({ level, onUndo }: { level: Level; onUndo?: () => void }) {
   const [imgFailed, setImgFailed] = useState(false);
   const showImage = level.image && !imgFailed;
   const [descRef, descScrollable] = useIsScrollable<HTMLParagraphElement>(level.description);
@@ -33,6 +35,12 @@ export function LevelCard({ level }: { level: Level }) {
           <span className={`tag tag-${level.energy}`}>{ENERGY_LABEL[level.energy]}</span>
           {level.boss && <span className="tag tag-boss">Boss</span>}
         </div>
+        {onUndo && (
+          <button type="button" className="undo-chip" onClick={onUndo} aria-label="Undo: go back to the previous pick">
+            <UndoIcon />
+            Undo
+          </button>
+        )}
       </div>
 
       <div className="card-body">
