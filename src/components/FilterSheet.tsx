@@ -9,7 +9,8 @@ import {
 
 import { bump, tick } from '../lib/haptics';
 
-import { MultiSelect } from './MultiSelect';
+import { DiceIcon, ResetIcon } from './Icons';
+import { MultiSelect, type Option } from './MultiSelect';
 import { Sheet } from './Sheet';
 
 interface Props {
@@ -17,25 +18,21 @@ interface Props {
   value: FilterState;
   onChange: (next: FilterState) => void;
   onClose: () => void;
+  onDone: () => void;
   matchCount: number;
-}
-
-interface Option<T extends string> {
-  value: T;
-  label: string;
 }
 
 function toOptions<T extends string>(labels: Record<T, string>): Option<T>[] {
   return (Object.keys(labels) as T[]).map(value => ({ value, label: labels[value] }));
 }
 
-// Story options use shorter labels than the card badge (STORY_LABEL), plus an 'all' choice.
 const STORY_OPTIONS: Option<FilterState['story']>[] = [
   { value: 'all', label: 'Anyone' },
   { value: 'mio', label: 'Mio' },
   { value: 'zoe', label: 'Zoe' },
   { value: 'both', label: 'Both' }
 ];
+
 const ENERGY_OPTIONS = toOptions(ENERGY_LABEL);
 const KIND_OPTIONS = toOptions(KIND_LABEL);
 const BOSS_OPTIONS = toOptions(BOSS_LABEL);
@@ -76,7 +73,7 @@ function Segmented<T extends string>({
   );
 }
 
-export function FilterSheet({ open, value, onChange, onClose, matchCount }: Props) {
+export function FilterSheet({ open, value, onChange, onClose, onDone, matchCount }: Props) {
   // Every filter change gives a light tick.
   const update = (next: FilterState) => {
     tick();
@@ -132,10 +129,13 @@ export function FilterSheet({ open, value, onChange, onClose, matchCount }: Prop
             onChange(DEFAULT_FILTERS);
           }}
           disabled={!hasActive}
+          aria-label="Reset filters"
+          title="Reset filters"
         >
-          Reset
+          <ResetIcon />
         </button>
-        <button type="button" className="done-btn" onClick={onClose}>
+        <button type="button" className="done-btn" onClick={onDone}>
+          <DiceIcon size={20} />
           Done
         </button>
       </footer>

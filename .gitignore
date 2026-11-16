@@ -1,261 +1,110 @@
 ### Universal ###
-# Common files that should be ignored in all projects
 
 # Logs
 *.log
+logs/
 
-# Temporary files
+# Temporary and backup files
 *.tmp
+*.temp
+*.bak
+*.backup.*
+*.swp
 *~
 
-*.bak
-
-# Environment files (containing secrets, API keys, credentials)
+# Environment files (may contain secrets)
 .env
-*.env
 .env.*
-
-# Local configuration that shouldn't be shared
+*.env
 *.local
 
+# Editors
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.sublime-project
+*.sublime-workspace
+.history/
+
 ### Node ###
-# Node.js dependency directory, logs, and environment files
 
 # Dependencies
 node_modules/
-jspm_packages/
-bower_components/
-web_modules/
 
-# Logs
-logs
-*.log
-*.launch
-connect.lock/
-
-libpeerconnection.log
-.history/
+# Package manager logs and caches
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
+.npm/
+.pnpm-store/
+.yarn/
+.pnp.*
+yarn.lock
 
-lerna-debug.log*
-.pnpm-debug.log*
+# Caches
+.cache/
+.eslintcache
+.stylelintcache
+*.tsbuildinfo
+
+# Coverage
+coverage/
+*.lcov
+.nyc_output/
 
 # Diagnostic reports
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
-# Runtime data
-
-pids
-*.pid
-*.seed
-*.pid.lock
-
-# Environment
-
-.env.development.local
-.env.test.local
-.env.production.local
-.env.local
-
-# Package management
-
-.npm
-# package-lock.json
-yarn.lock
-.yarn-integrity
-.yarn/cache
-
-.yarn/unplugged
-.yarn/build-state.yml
-.yarn/install-state.gz
-.pnp.*
-
-# Coverage & Test
-
-coverage/
-lib-cov
-*.lcov
-.nyc_output
-
-# Build output
-
-dist/
-build/
-.next/
-out/
-.nuxt
-
-.output
-
-# Cache & Temporary
-.cache/
-.temp/
-.grunt
-
-.lock-wscript
-.fusebox/
-.dynamodb/
-.tern-port
-.vscode-test
-
-.node_repl_history
-.webpack/
-
-# TypeScript
-*.tsbuildinfo
-
-# Optional REPL history
-
-.node_repl_history
-
-# Additional caches
-.eslintcache
-.stylelintcache
-.parcel-cache
-
-.rpt2_cache/
-.rts2_cache_cjs/
-.rts2_cache_es/
-.rts2_cache_umd/
-
-# Misc
-
+# Packed tarballs
 *.tgz
-.serverless/
-.vuepress/dist
-.temp
-.docusaurus
-
-.svelte-kit
 
 ### React ###
-# React build directory and environment files
 
+# Build output (Vite)
+dist/
+dist-ssr/
 build/
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
 
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.DS_*
-**/*.backup.*
-
-**/*.back.*
-*.sublime*
-psd
-thumb
-sketch
-
-coverage/
+# Vite config bundles left behind after a crash
+vite.config.*.timestamp-*
 
 ### Linux ###
-# Linux operating system specific files
 
-*~
-.fuse_hidden*
 .directory
-.Trash-*
+.fuse_hidden*
 .nfs*
+.Trash-*
 
-.swap
-.swp
-.swo
-.swn
-.bash_history
-
-.cache/
-.config/
-.local/
-lost+found/
-.gvfs/
-
-.dbus/
-.thumbnails/
-.Xauthority
-.ICEauthority
-.recently-used
-
-*.tmp
-.pid
-.lock
-core
-core.*
-
-.saves-*
-.*.kate-swp
-
-### Macos ###
-# macOS operating system specific files
+### macOS ###
 
 .DS_Store
 .AppleDouble
 .LSOverride
-Icon
 ._*
-
 .DocumentRevisions-V100
 .fseventsd
 .Spotlight-V100
 .TemporaryItems
 .Trashes
-
 .VolumeIcon.icns
 .com.apple.timemachine.donotpresent
 .AppleDB
 .AppleDesktop
 Network Trash Folder
-
 Temporary Items
 .apdisk
 *.icloud
-.AppleDB/
-.AppleDesktop/
-
-*.AppleDouble
-*.AppleDB
-.Spotlight-V100/
-.Trashes/
-*.swp
-
-Network Trash Folder/
-.DS_Store?
-.Spotlight-V100
-.Trashes
+# Custom folder icons (the name ends with a carriage return)
+Icon[]
 
 ### Windows ###
-# Windows operating system specific files
 
 Thumbs.db
 Thumbs.db:encryptable
 ehthumbs.db
 ehthumbs_vista.db
-*.stackdump
-
 [Dd]esktop.ini
 $RECYCLE.BIN/
-*.cab
-*.msi
-*.msix
-
-*.msm
-*.msp
+*.stackdump
 *.lnk
-*.tmp
-*.bak
-
-System Volume Information/
-[Tt]emp/
-$Recycle.Bin/
-~$*
-*.log
-
-hiberfil.sys
-pagefile.sys
-*.db
-Desktop.ini
-ntuser.dat*

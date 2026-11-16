@@ -17,6 +17,7 @@ import { pickRandom } from './lib/random';
 import { useStoredState } from './lib/useStoredState';
 
 import { FilterSheet } from './components/FilterSheet';
+import { DiceIcon, FilterIcon, InfoIcon } from './components/Icons';
 import { InfoSheet } from './components/InfoSheet';
 import { LevelCard } from './components/LevelCard';
 
@@ -43,9 +44,9 @@ function sanitise(stored: Partial<FilterState> | null | undefined): FilterState 
   const merged = { ...DEFAULT_FILTERS, ...(stored ?? {}) };
   return {
     story: merged.story === 'all' || Object.hasOwn(STORY_LABEL, merged.story) ? merged.story : 'all',
-    energy: Array.isArray(merged.energy) ? merged.energy.filter(e => Object.hasOwn(ENERGY_LABEL, e)) : [],
+    energy: Array.isArray(merged.energy) ? merged.energy.filter(e => typeof e === 'string' && Object.hasOwn(ENERGY_LABEL, e)) : [],
     boss: Object.hasOwn(BOSS_LABEL, merged.boss) ? merged.boss : 'any',
-    kinds: Array.isArray(merged.kinds) ? merged.kinds.filter(k => Object.hasOwn(KIND_LABEL, k)) : []
+    kinds: Array.isArray(merged.kinds) ? merged.kinds.filter(k => typeof k === 'string' && Object.hasOwn(KIND_LABEL, k)) : []
   };
 }
 
@@ -70,45 +71,6 @@ const TWINKLES: [number, number, number, number][] = [
 ];
 
 const filterPool = (filters: FilterState) => LEVELS.filter(level => matches(level, filters));
-
-function FilterIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
-      <path
-        d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"
-        stroke="currentColor"
-        strokeWidth="2.2"
-        strokeLinecap="square"
-      />
-      <rect x="14" y="4" width="4" height="4" fill="currentColor" />
-      <rect x="8" y="10" width="4" height="4" fill="currentColor" />
-      <rect x="16" y="16" width="4" height="4" fill="currentColor" />
-    </svg>
-  );
-}
-
-function DiceIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true">
-      <rect x="3" y="3" width="18" height="18" rx="3.5" fill="none" stroke="currentColor" strokeWidth="2.2" />
-      <circle cx="8" cy="8" r="1.7" fill="currentColor" />
-      <circle cx="16" cy="8" r="1.7" fill="currentColor" />
-      <circle cx="12" cy="12" r="1.7" fill="currentColor" />
-      <circle cx="8" cy="16" r="1.7" fill="currentColor" />
-      <circle cx="16" cy="16" r="1.7" fill="currentColor" />
-    </svg>
-  );
-}
-
-function InfoIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
-      <rect x="3" y="3" width="18" height="18" rx="3" fill="none" stroke="currentColor" strokeWidth="2.2" />
-      <rect x="10.8" y="10" width="2.4" height="8" fill="currentColor" />
-      <rect x="10.8" y="6" width="2.4" height="2.4" fill="currentColor" />
-    </svg>
-  );
-}
 
 export default function App() {
   const [storedFilters, setFilters] = useStoredState<FilterState>(FILTERS_KEY, DEFAULT_FILTERS);
@@ -152,6 +114,15 @@ export default function App() {
     if (currentId) remember(currentId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // If nothing was dealt (the saved filters matched nothing), deal as soon as the filters allow one.
+  useEffect(() => {
+    if (currentId) return;
+    const next = pickRandom(pool, recent);
+    if (!next) return;
+    setCurrentId(next.id);
+    remember(next.id);
+  }, [currentId, pool, recent, remember]);
 
   function randomise() {
     // Close any open drawer so the new pick is visible.
@@ -202,6 +173,7 @@ export default function App() {
           value={filters}
           onChange={setFilters}
           onClose={closeSheet}
+          onDone={randomise}
           matchCount={pool.length}
         />
         <InfoSheet open={openSheet === 'info'} onClose={closeSheet} />

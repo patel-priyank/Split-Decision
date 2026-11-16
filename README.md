@@ -12,6 +12,8 @@ A small web app for people who've finished **Split Fiction** and want to jump ba
   - Energy (Chill / Medium / Intense)
   - Type (level or side story)
   - Boss fights (any, only bosses, no bosses)
+
+  Tapping **Done** deals a new pick with the chosen filters.
 - **Level cards**: an image, the chapter, tags, a tagline and a short description of what happens in the level (spoilers included).
 - **Remembers your filters**: they're stored in the browser, per device. No account or backend.
 

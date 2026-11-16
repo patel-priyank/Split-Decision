@@ -1,18 +1,20 @@
 // Level / side story header images from the Fextralife Split Fiction wiki
 // (https://splitfiction.wiki.fextralife.com). Keyed by exact level title.
 // Where the wiki shows a 300px thumbnail, the full-size original is used instead.
-// Titles missing here fall back to the themed card art.
+// Some titles share an image because the wiki uses the same one for them.
+// If an image fails to load, the card falls back to its themed art.
 
 const WIKI_BASE = 'https://static0.fextralifeimages.com/file/splitfiction/';
 
 export const IMAGES: Record<string, string> = {
-  // Streets of Neon intentionally omitted: the wiki reuses the Farmlife image there.
   'Freedom Fighters': `${WIKI_BASE}7/73/Tooltip-freedom-fighters-walkthrough-split-fiction-wiki-guide-300px.png`,
   'Brave Knights': `${WIKI_BASE}5/5b/Tooltip-brave-knights-walkthrough-split-fiction-wiki-guide-300px.png`,
+
   'Rush Hour': `${WIKI_BASE}9/99/Rush-hour-cutscene-300px-split-fiction-wiki.png`,
   'Play Me Techno': `${WIKI_BASE}9/99/Rush-hour-cutscene-300px-split-fiction-wiki.png`,
   'The Legend of the Sandfish': `${WIKI_BASE}8/83/Infobox-the-legend-of-the-sandfish-neon-revenge-walkthrough-split-fiction-wiki-guide-300px.png`,
   'Hello, Mr. Hammer': `${WIKI_BASE}5/5c/Hammer-cutscene-300px-split-fiction-wiki.png`,
+  'Streets of Neon': `${WIKI_BASE}2/2f/Farm-story-pigs-300px-split-fiction-wiki.png`,
   'Farmlife': `${WIKI_BASE}2/2f/Farm-story-pigs-300px-split-fiction-wiki.png`,
   'Parking Garage': `${WIKI_BASE}c/c2/Parking-cutscene-300px-split-fiction-wikijpg.png`,
   'The Getaway Car': `${WIKI_BASE}f/f6/Getaway-cutscene-300px-split-fiction-wiki.png`,
@@ -22,6 +24,7 @@ export const IMAGES: Record<string, string> = {
   'Gravity Bike': `${WIKI_BASE}d/d3/Gravity-bike-split-fiction-wiki.png`,
   'Skyscraper Climb': `${WIKI_BASE}e/eb/Skyscraper-climb-split-fiction-wiki.png`,
   'Head of the Crime Syndicate': `${WIKI_BASE}a/ac/Head-of-the-crime-syndicate-split-fiction-wiki.png`,
+
   'The Underlands': `${WIKI_BASE}2/2c/Underlands-cutscene-300px-split-fiction-wiki.png`,
   'Lord Evergreen': `${WIKI_BASE}1/12/Mother-earth-split-fiction-wiki.png`,
   'Train Heist': `${WIKI_BASE}d/d8/Train-heist-300px-split-fiction-wiki.png`,
@@ -34,6 +37,7 @@ export const IMAGES: Record<string, string> = {
   'Halls of Ice': `${WIKI_BASE}3/3f/Halls-of-ice-split-fiction-wiki.png`,
   'Collapsing Star': `${WIKI_BASE}7/76/Collapsing-star-split-fiction-wiki.png`,
   'The Ice King': `${WIKI_BASE}3/3e/Iceking-cutscene-300px-split-fiction-wiki.png`,
+
   'The Dropship': `${WIKI_BASE}8/8e/The-dropship-split-fiction-wiki.png`,
   'Infiltration': `${WIKI_BASE}8/8f/Infobox-infiltration-final-dawn-walkthrough-split-fiction-wiki-guide-300px.png`,
   'Gun Upgrade': `${WIKI_BASE}5/57/Infobox-gun-upgrade-final-dawn-walkthrough-split-fiction-wiki-guide-300px.png`,
@@ -49,6 +53,7 @@ export const IMAGES: Record<string, string> = {
   'Notebook': `${WIKI_BASE}2/2e/The-notebook-split-fiction-wiki.png`,
   'The Escape': `${WIKI_BASE}f/f9/The-escape-infobox-img-split-fiction-wiki.png`,
   'System Fail Safe Mode': `${WIKI_BASE}b/ba/System-fail-safe-mode-infobox-img-split-fiction-wiki.png`,
+
   'A Serpentine Path': `${WIKI_BASE}6/6e/A-serpentine-path-infobox-img-split-fiction-wiki.png`,
   'Water Temple': `${WIKI_BASE}8/86/Water-temple-infobox-img-split-fiction-wiki.png`,
   'Slopes of War': `${WIKI_BASE}8/88/Slopes-cutscene-300px-split-fiction-wiki.png`,
@@ -64,6 +69,7 @@ export const IMAGES: Record<string, string> = {
   'Might of Dragons': `${WIKI_BASE}3/31/Infobox-might-of-dragons-rise-of-the-dragon-walkthrough-split-fiction-wiki-guide-300px.png`,
   'Into the Storm': `${WIKI_BASE}6/64/Infobox-into-the-storm-rise-of-the-dragon-walkthrough-split-fiction-wiki-guide.png`,
   "Megalith's Wrath": `${WIKI_BASE}c/c9/Megaliths-wrath-infobox-img-split-fiction-wiki.png`,
+
   'Prison Ship': `${WIKI_BASE}a/ad/Prison-ship-split-fiction-wiki-guide.png`,
   'Handy Drones': `${WIKI_BASE}3/3a/Handy-drones-split-fiction-wiki-guide-0.png`,
   'Down the Rabbit Hole': `${WIKI_BASE}2/26/Down-the-rabbit-hole-split-fiction-wiki-guide-1-min.png`,
@@ -75,12 +81,14 @@ export const IMAGES: Record<string, string> = {
   'Cell Blocks': `${WIKI_BASE}4/47/Cell-blocks-infobox-img-split-fiction-wiki.png`,
   'Maximum Security': `${WIKI_BASE}b/bf/Maximumsecurity-cutscene-300px-split-fiction-wiki.png`,
   'The Prisoner': `${WIKI_BASE}f/fe/The-prisoner-infobox-img-split-fiction-wiki.png`,
+
   'An Ominous Welcome': `${WIKI_BASE}6/69/An_ominous_welcome_-_infobox_image-thehollow%3Dsplitfiction-wiki-guidemin.png`,
   'Mosaic of Memories': `${WIKI_BASE}d/d6/Mosaic-cutscene-300px-split-fiction-wiki.png`,
   'Ghost Town': `${WIKI_BASE}c/ca/Ghost-town-split-fiction-wiki.png`,
   'Light in the Dark': `${WIKI_BASE}7/71/Light-in-the-dark-infobo-img-split-fiction-wiki.png`,
   'Spiritual Guides': `${WIKI_BASE}a/a3/Spiritualguides-cutscene-300px-split-fiction-wiki.png`,
   'The Hydra': `${WIKI_BASE}4/43/The-hydra-split-fiction-wiki.png`,
+
   'Split Up': `${WIKI_BASE}7/73/Split-split-fiction-wiki-guide-0.png`,
   'A Warm Greeting': `${WIKI_BASE}e/eb/Infobox-a-warm-greeting-split-walkthrough-split-fiction-wiki-guide-300px.png`,
   'Face-to-Face': `${WIKI_BASE}e/e5/Infobox-face-to-face-split-walkthrough-split-fiction-wiki-guide-300px.png`,

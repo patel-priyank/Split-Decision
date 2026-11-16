@@ -33,7 +33,8 @@ export function InfoSheet({ open, onClose }: Props) {
           </li>
           <li>
             <strong>Filters</strong> narrow it down: whose story it is (Mio's sci-fi, Zoe's fantasy, or both), how much
-            energy you've got, level or side story, and whether you're up for a boss fight.
+            energy you've got, level or side story, and whether you're up for a boss fight. Tap Done to deal a new pick
+            with them.
           </li>
           <li>Your filters are remembered on this device.</li>
           <li>Find the level in the game's chapter select and play from there.</li>

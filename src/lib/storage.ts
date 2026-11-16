@@ -1,4 +1,5 @@
 // Small, failure-tolerant localStorage helpers.
+
 export function load<T>(key: string, fallback: T): T {
   try {
     const raw = localStorage.getItem(key);

@@ -646,18 +646,17 @@ button:disabled {
   gap: 12px;
 }
 
-/* Secondary action: same size as Done, outlined */
+/* Secondary icon action: same height as Done, outlined */
 .outline-btn {
+  width: 44px;
   height: 44px;
-  padding: 0 22px;
+  padding: 0;
+  display: grid;
+  place-items: center;
   border: 2px solid var(--cyan);
   border-radius: var(--radius-sm);
   background: transparent;
   color: var(--cyan);
-  font-family: var(--font-display);
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
   transition:
     background 0.12s,
     color 0.12s,
@@ -675,8 +674,11 @@ button:disabled {
 }
 
 .done-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
   height: 44px;
-  padding: 0 26px;
+  padding-inline: 23px 26px;
   border: 0;
   border-radius: var(--radius-sm);
   background: var(--cyan);
@@ -742,7 +744,7 @@ button:disabled {
   place-items: center;
   line-height: 1;
   font-size: 0.72rem;
-  font-weight: 900;
+  font-weight: 700;
   border-radius: 2px;
   background: var(--cyan);
   color: var(--ink);
