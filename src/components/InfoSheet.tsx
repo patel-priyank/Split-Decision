@@ -1,4 +1,6 @@
-import { useLayoutEffect, useRef } from 'react';
+import { useLayoutEffect } from 'react';
+
+import { useIsScrollable } from '../lib/useIsScrollable';
 
 import { Sheet } from './Sheet';
 
@@ -8,12 +10,13 @@ interface Props {
 }
 
 export function InfoSheet({ open, onClose }: Props) {
-  const bodyRef = useRef<HTMLDivElement>(null);
+  const [bodyRef, scrollable] = useIsScrollable<HTMLDivElement>();
 
   // Start from the top each time it opens. Layout effect, so the old position never shows during the slide-in.
   useLayoutEffect(() => {
-    if (open && bodyRef.current) bodyRef.current.scrollTop = 0;
-  }, [open]);
+    const bodyEl = bodyRef.current;
+    if (open && bodyEl) bodyEl.scrollTop = 0;
+  }, [open, bodyRef]);
 
   return (
     <Sheet open={open} onClose={onClose} label="About Split Decision">
@@ -21,14 +24,14 @@ export function InfoSheet({ open, onClose }: Props) {
         <h2 className="sheet-title">About</h2>
       </header>
 
-      <div className="info-body" ref={bodyRef}>
+      <div className="info-body" ref={bodyRef} tabIndex={scrollable ? 0 : undefined}>
         <p>
           Finished Split Fiction and just want to jump back in for a chill session? Split Decision picks a random place
           to start, so you don't have to.
         </p>
         <ul className="info-list">
           <li>
-            <strong>Pick another</strong> deals a random level or side story from all 8 chapters. A new one is dealt
+            <strong>The dice</strong> deals a random level or side story from all 8 chapters. A new one is dealt
             every time you open the app, and your last few picks won't come straight back.
           </li>
           <li>

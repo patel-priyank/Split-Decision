@@ -38,7 +38,7 @@ function matches(level: Level, filters: FilterState): boolean {
   return true;
 }
 
-// Merge with defaults and drop values that no longer exist (old moods, removed 'chapter' type, ...).
+// Merge with defaults and drop values that are no longer valid (e.g. from older versions or corrupt storage).
 // Object.hasOwn rather than `in`, so prototype keys like "toString" from corrupt storage are rejected.
 function sanitise(stored: Partial<FilterState> | null | undefined): FilterState {
   const merged = { ...DEFAULT_FILTERS, ...(stored ?? {}) };

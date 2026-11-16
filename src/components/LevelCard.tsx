@@ -2,11 +2,14 @@ import { useState } from 'react';
 
 import { ENERGY_LABEL, KIND_LABEL, STORY_LABEL, type Level } from '../data/types';
 
+import { useIsScrollable } from '../lib/useIsScrollable';
+
 import { Marquee } from './Marquee';
 
 export function LevelCard({ level }: { level: Level }) {
   const [imgFailed, setImgFailed] = useState(false);
   const showImage = level.image && !imgFailed;
+  const [descRef, descScrollable] = useIsScrollable<HTMLParagraphElement>(level.description);
 
   return (
     <article className={`card card-${level.story}`}>
@@ -41,7 +44,9 @@ export function LevelCard({ level }: { level: Level }) {
         <p className="card-tagline" title={level.tagline}>
           {level.tagline}
         </p>
-        <p className="card-desc">{level.description}</p>
+        <p className="card-desc" ref={descRef} tabIndex={descScrollable ? 0 : undefined}>
+          {level.description}
+        </p>
       </div>
     </article>
   );

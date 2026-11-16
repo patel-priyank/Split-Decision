@@ -453,13 +453,13 @@ button:disabled {
   text-overflow: ellipsis;
 }
 
-/* Fills the remaining height; scrolls inside the card when it's longer (is-scrollable is set by LevelCard). */
+/* Fills the remaining height; scrolls inside the card when it's longer. */
 .card-desc {
   flex: 1;
   min-height: 0;
   margin: 0;
   padding-bottom: 18px;
-  overflow-y: hidden;
+  overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-width: thin;
   scrollbar-color: var(--line-strong) transparent;
@@ -467,12 +467,11 @@ button:disabled {
   font-size: 0.95rem;
   font-weight: 500;
   color: var(--text-2);
-  -webkit-mask-image: linear-gradient(#000 calc(100% - 22px), transparent);
-  mask-image: linear-gradient(#000 calc(100% - 22px), transparent);
 }
 
-.card-desc.is-scrollable {
-  overflow-y: auto;
+/* Inset ring: the card clips anything drawn past its bottom edge */
+.card-desc:focus-visible {
+  outline-offset: -2px;
 }
 
 /* Energy / boss tags overlaid on the image, bottom-left */
@@ -860,11 +859,6 @@ button:disabled {
   place-items: center;
   border: 2px solid transparent;
   border-radius: var(--radius);
-  font-family: var(--font-display);
-  font-weight: 900;
-  font-size: 1.2rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
   color: var(--ink);
   background:
     linear-gradient(180deg, #e3fdfe 0%, var(--cyan) 50%, var(--cyan-deep) 100%) padding-box,
