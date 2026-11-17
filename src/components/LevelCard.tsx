@@ -29,8 +29,10 @@ export function LevelCard({ level, onUndo }: { level: Level; onUndo?: () => void
             <span>{level.title.charAt(0)}</span>
           </div>
         )}
-        <span className={`badge badge-${level.story}`}>{STORY_LABEL[level.story]}</span>
-        <span className="kind-badge">{KIND_LABEL[level.kind]}</span>
+        <div className="card-badges">
+          <span className={`badge badge-${level.story}`}>{STORY_LABEL[level.story]}</span>
+          <span className="kind-badge">{KIND_LABEL[level.kind]}</span>
+        </div>
         <div className="card-tags">
           <span className={`tag tag-${level.energy}`}>{ENERGY_LABEL[level.energy]}</span>
           {level.boss && <span className="tag tag-boss">Boss</span>}

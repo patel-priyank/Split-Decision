@@ -226,17 +226,17 @@ button:disabled {
   }
 }
 
-/* Single-step undo chip, bottom-right of the card image (mirrors the tags bottom-left).
+/* Single-step undo chip, top-right of the card image.
    It pops in once the deal lands, then gives one "rewind" nudge so it gets noticed, and then sits still. */
 .undo-chip {
   position: absolute;
+  top: 10px;
   right: 10px;
-  bottom: 13px;
   z-index: 1;
   display: flex;
   align-items: center;
-  gap: 5px;
-  padding: 6px 11px 6px 9px;
+  gap: 7px;
+  padding: 9px 16px 9px 13px;
   border: 1.5px solid transparent;
   border-radius: var(--radius-sm);
   background:
@@ -244,7 +244,7 @@ button:disabled {
     var(--split-edge) border-box;
   color: var(--ink);
   font-family: var(--font-display);
-  font-size: 0.72rem;
+  font-size: 1.08rem;
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -268,6 +268,8 @@ button:disabled {
 }
 
 .undo-chip svg {
+  width: 19px;
+  height: 19px;
   animation: chip-rewind 0.7s ease-in-out 0.7s;
 }
 
@@ -437,19 +439,19 @@ button:disabled {
   border: 1.5px solid currentColor;
 }
 
-.badge,
-.kind-badge {
+/* Character badge with the level/side-story badge stacked under it, top-left of the image */
+.card-badges {
   position: absolute;
   top: 10px;
-  z-index: 1;
-}
-
-.badge {
   left: 10px;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
 }
 
 .kind-badge {
-  right: 10px;
   color: var(--text);
 }
 
