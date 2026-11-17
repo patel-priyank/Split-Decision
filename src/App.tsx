@@ -128,6 +128,11 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // The filters when the Filters panel opened, so leaving it can tell whether they changed.
+  const filtersAtOpen = useRef<FilterState | null>(null);
+  const filtersChangedInPanel = () =>
+    openSheet === 'filters' && filtersAtOpen.current !== null && !sameFilters(filtersAtOpen.current, filters);
+
   // `from` lets a caller deal from filters it has just set, before the re-render updates `pool`.
   function deal({ undoable, from = pool }: { undoable: boolean; from?: Level[] }) {
     // Close any open drawer so the new pick is visible.
@@ -143,7 +148,8 @@ export default function App() {
     }
     roll();
     // A pick after changing filters isn't undoable: the old card may not match them.
-    setPreviousId(undoable ? currentId : undefined);
+    // That includes tapping the dice while the Filters panel is open with changes.
+    setPreviousId(undoable && !filtersChangedInPanel() ? currentId : undefined);
     setUndone(false);
     setCurrentId(next.id);
     remember(next.id);
@@ -170,25 +176,24 @@ export default function App() {
     deal({ undoable: false, from: filterPool(DEFAULT_FILTERS) });
   }
 
-  // The filters when the Filters panel opened, so closing it can tell whether they changed.
-  const filtersAtOpen = useRef<FilterState | null>(null);
-
   function openSheetNamed(sheet: SheetName) {
     if (sheet === 'filters') filtersAtOpen.current = filters;
     setOpenSheet(sheet);
   }
 
-  // Every way out of the Filters panel (backdrop, Escape, the filter button) acts like Done
-  // if the filters changed, so the card on screen always matches them.
+  // Every way out of the Filters panel (backdrop, Escape, the filter button, the info button)
+  // acts like Done if the filters changed, so the card on screen always matches them.
   function closeSheet() {
-    if (openSheet === 'filters' && filtersAtOpen.current && !sameFilters(filtersAtOpen.current, filters)) {
-      deal({ undoable: false });
-    } else {
-      setOpenSheet(null);
-    }
+    if (filtersChangedInPanel()) deal({ undoable: false });
+    else setOpenSheet(null);
   }
 
-  const toggleSheet = (sheet: SheetName) => (openSheet === sheet ? closeSheet() : openSheetNamed(sheet));
+  function toggleSheet(sheet: SheetName) {
+    if (openSheet === sheet) return closeSheet();
+    // Switching straight from Filters to About: deal for the changed filters first.
+    if (filtersChangedInPanel()) deal({ undoable: false });
+    openSheetNamed(sheet);
+  }
 
   return (
     <div className={`app ${ready ? 'is-ready' : ''}`}>
