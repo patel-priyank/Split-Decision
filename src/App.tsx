@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { LEVELS } from './data/levels';
 import {
@@ -17,7 +17,7 @@ import { pickRandom } from './lib/random';
 import { useStoredState } from './lib/useStoredState';
 
 import { FilterSheet } from './components/FilterSheet';
-import { DiceIcon, FilterIcon, InfoIcon } from './components/Icons';
+import { DiceIcon, FilterIcon, InfoIcon, ResetIcon } from './components/Icons';
 import { InfoSheet } from './components/InfoSheet';
 import { LevelCard } from './components/LevelCard';
 
@@ -52,6 +52,12 @@ function sanitise(stored: Partial<FilterState> | null | undefined): FilterState 
       ? merged.kinds.filter(k => typeof k === 'string' && Object.hasOwn(KIND_LABEL, k))
       : []
   };
+}
+
+// Same filter values, ignoring the order multi-select choices were made in.
+function sameFilters(a: FilterState, b: FilterState): boolean {
+  const sameSet = (x: string[], y: string[]) => x.length === y.length && x.every(v => y.includes(v));
+  return a.story === b.story && a.boss === b.boss && sameSet(a.energy, b.energy) && sameSet(a.kinds, b.kinds);
 }
 
 // Keep only string ids, so a corrupt stored value can't crash the picker.
@@ -122,20 +128,19 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // If nothing was dealt (the saved filters matched nothing), deal as soon as the filters allow one.
-  useEffect(() => {
-    if (currentId) return;
-    const next = pickRandom(pool, recent);
-    if (!next) return;
-    setCurrentId(next.id);
-    remember(next.id);
-  }, [currentId, pool, recent, remember]);
-
-  function deal({ undoable }: { undoable: boolean }) {
+  // `from` lets a caller deal from filters it has just set, before the re-render updates `pool`.
+  function deal({ undoable, from = pool }: { undoable: boolean; from?: Level[] }) {
     // Close any open drawer so the new pick is visible.
     setOpenSheet(null);
-    const next = pickRandom(pool, recent, currentId);
-    if (!next) return;
+    const next = pickRandom(from, recent, currentId);
+    if (!next) {
+      // Nothing matches: swap the card for the empty state.
+      setPreviousId(undefined);
+      setUndone(false);
+      setCurrentId(undefined);
+      setDealKey(k => k + 1);
+      return;
+    }
     roll();
     // A pick after changing filters isn't undoable: the old card may not match them.
     setPreviousId(undoable ? currentId : undefined);
@@ -159,9 +164,31 @@ export default function App() {
     setPreviousId(undefined);
   };
 
+  function resetFilters() {
+    bump();
+    changeFilters(DEFAULT_FILTERS);
+    deal({ undoable: false, from: filterPool(DEFAULT_FILTERS) });
+  }
 
-  const closeSheet = useCallback(() => setOpenSheet(null), []);
-  const toggleSheet = (sheet: SheetName) => setOpenSheet(open => (open === sheet ? null : sheet));
+  // The filters when the Filters panel opened, so closing it can tell whether they changed.
+  const filtersAtOpen = useRef<FilterState | null>(null);
+
+  function openSheetNamed(sheet: SheetName) {
+    if (sheet === 'filters') filtersAtOpen.current = filters;
+    setOpenSheet(sheet);
+  }
+
+  // Every way out of the Filters panel (backdrop, Escape, the filter button) acts like Done
+  // if the filters changed, so the card on screen always matches them.
+  function closeSheet() {
+    if (openSheet === 'filters' && filtersAtOpen.current && !sameFilters(filtersAtOpen.current, filters)) {
+      deal({ undoable: false });
+    } else {
+      setOpenSheet(null);
+    }
+  }
+
+  const toggleSheet = (sheet: SheetName) => (openSheet === sheet ? closeSheet() : openSheetNamed(sheet));
 
   return (
     <div className={`app ${ready ? 'is-ready' : ''}`}>
@@ -192,7 +219,19 @@ export default function App() {
             <LevelCard level={current} onUndo={previousId ? undo : undefined} />
           ) : (
             <div className="empty">
-              <p>No matches for these filters.</p>
+              <div className="empty-body">
+                <p className="empty-title">Nothing matches these filters</p>
+                <div className="empty-actions">
+                  <button type="button" className="empty-btn empty-btn-outline" onClick={resetFilters}>
+                    <ResetIcon />
+                    Reset filters
+                  </button>
+                  <button type="button" className="empty-btn" onClick={() => openSheetNamed('filters')}>
+                    <FilterIcon />
+                    Change filters
+                  </button>
+                </div>
+              </div>
             </div>
           )}
         </div>
